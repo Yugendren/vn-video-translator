@@ -23,7 +23,7 @@ An automated, hardware-accelerated pipeline designed to download, OCR-transcribe
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/vn-video-translator.git
+git clone https://github.com/yugendren/vn-video-translator.git
 cd vn-video-translator
 ```
 
