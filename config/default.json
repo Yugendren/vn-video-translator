@@ -1,0 +1,13 @@
+{
+  "crop_y_ratio": 0.72,
+  "crop_h_ratio": 0.28,
+  "sample_interval": 1.0,
+  "ocr_languages": ["zh-Hans", "en-US"],
+  "target_language": "English",
+  "game_context": "Visual Novel / Anime story cutscene (e.g. Girls' Frontline 2, Genshin, Arknights). Translate into natural, engaging, studio-quality English dialogue.",
+  "box_color": [14, 24, 27, 248],
+  "box_rect_1080p": [78, 825, 1842, 1047],
+  "speaker_font_size": 30,
+  "dialogue_font_size": 27,
+  "video_bitrate": "4500k"
+}

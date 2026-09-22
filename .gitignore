@@ -1,0 +1,33 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Local Config & Secrets
+.env
+*.local
+
+# Output and temp working files
+output/
+downloads/
+temp/
+overlays/
+*.mp4
+*.m4a
+*.mkv
+*.webm
+*.bin
+*.part
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Swift build artifacts
+*.o
+*.swiftdoc
+*.swiftmodule
+src/ocr_bin
