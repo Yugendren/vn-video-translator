@@ -38,13 +38,16 @@ WHICH ENGINE TO CHOOSE? (Option 1 vs Option 2)
       (teasing, formal maid, childish, mystical prophecies), and deep lore awareness.
     • Cost: ~$0.001 per 30-minute episode (less than 1/10th of a cent).
     • Speed: ~3 to 5 seconds for the entire episode.
-    • Setup: Put GEMINI_API_KEY in .env or pass --api-key.
+    • Setup: Free API key from Google AI Studio:
+      👉 https://aistudio.google.com/app/apikey
+      If not already set in .env, the CLI interactively prompts and auto-saves it for you.
 
   Option 2: Local Model (Recommended for Offline / Bulk Processing)
     • When to use: You want 100% free, 100% offline translation with zero API keys or accounts.
     • Cost: $0.00 (completely free & private).
     • Speed: ~45 seconds on Apple Silicon Metal GPU (Qwen 2.5 3B/7B).
-    • Setup: Place any .gguf model in models/ (auto-detects local Qwen).
+    • Setup: Zero manual configuration needed! The CLI automatically checks for llama.cpp
+      (offering one-click brew install) and auto-downloads Qwen 2.5 3B if no model is found.
 
 --------------------------------------------------------------------------------
 BEST PRACTICES & TIPS:
@@ -254,4 +257,3 @@ Use --about for a dead-simple explanation of Option 1 vs Option 2 and best pract
 
 if __name__ == "__main__":
     main()
-EOF

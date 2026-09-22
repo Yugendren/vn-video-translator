@@ -4,6 +4,12 @@ set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd "$DIR"
 
+# Quick bypass for help/about to print immediately without setup overhead
+if [[ "$*" == *"--about"* ]] || [[ "$*" == *"-h"* ]] || [[ "$*" == *"--help"* ]]; then
+    python3 translate.py "$@"
+    exit 0
+fi
+
 echo "=================================================="
 echo "   🎮 VN Video Translator & Localizer Pipeline"
 echo "=================================================="
@@ -14,11 +20,6 @@ if ! command -v ffmpeg &> /dev/null; then
     exit 1
 fi
 
-# Check yt-dlp
-if ! command -v yt-dlp &> /dev/null; then
-    echo "⚠️ yt-dlp not found in PATH. It will be installed in the virtualenv."
-fi
-
 # Setup Virtualenv
 if [ ! -d ".venv" ]; then
     echo "📦 Creating virtual environment (.venv)..."
@@ -27,8 +28,12 @@ fi
 
 source .venv/bin/activate
 
-# Install requirements
-pip install -q -r requirements.txt
+# Install requirements if not already marked installed
+if [ ! -f ".venv/.installed" ]; then
+    echo "📦 Installing Python dependencies..."
+    pip install -q -r requirements.txt
+    touch .venv/.installed
+fi
 
 # Load .env if present
 if [ -f ".env" ]; then

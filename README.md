@@ -62,26 +62,44 @@ Paste your Bilibili or YouTube links into `links.txt`, then run:
 
 ---
 
-## 🔑 Where Does the API Key Go? (Option 1)
+## 🚀 First-Launch & Engine Setup (Zero Friction)
 
-If using **Option 1 (Gemini Flash)**, you can supply your key in any of these ways:
-1. **`.env` file in the repo root:**
-   ```env
-   GEMINI_API_KEY=AIzaSy...
-   ```
-2. **Environment variable:**
-   ```bash
-   export GEMINI_API_KEY="AIzaSy..."
-   ```
-3. **Command line argument:**
-   ```bash
-   ./run.sh "https://..." --api-key "AIzaSy..."
-   ```
-4. **Interactive Prompt:** If no key is detected, the CLI will prompt you once and offer to automatically save it to `.env` so you never have to type it again.
+The pipeline is designed to be completely beginner-friendly. On first launch, it walks you through whichever option you choose:
 
-*(For **Option 2 (Local Model)**, no API key or account is needed at all).*
+### Option 1: Gemini Flash Cloud (Studio Localization)
+- **Free Key Link:** [Google AI Studio (https://aistudio.google.com/app/apikey)](https://aistudio.google.com/app/apikey)
+- **First Launch Experience:** If no key is configured, the CLI displays a clear dialog with the direct link above, prompts you to paste the key, and asks:
+  ```text
+  💾 Save key to .env so you don't have to enter it again? [Y/n]:
+  ```
+  Answering `y` writes it to `.env` permanently.
+- **Alternative ways to supply the key:**
+  - `.env` file in repo root: `GEMINI_API_KEY=AIzaSy...`
+  - Shell environment: `export GEMINI_API_KEY="AIzaSy..."`
+  - CLI flag: `./run.sh "https://..." --api-key "AIzaSy..."`
+
+### Option 2: Local Qwen Model (100% Free & Offline)
+- **Zero API keys or accounts required.**
+- **Automatic llama.cpp Verification:**
+  - On macOS, if `llama-server` is not installed, the CLI prompts:
+    ```text
+    Would you like to install llama.cpp via Homebrew now? (brew install llama.cpp) [Y/n]:
+    ```
+    Confirming automatically installs it with full Apple Silicon Metal GPU acceleration.
+- **Automatic Model Download:**
+  - The CLI looks in `./models/` and your HuggingFace cache (`~/.cache/huggingface/hub`).
+  - If no model is found, it asks:
+    ```text
+    Would you like to auto-download Qwen2.5-3B-Instruct now to ./models/? [Y/n]:
+    ```
+    Confirming streams `qwen2.5-3b-instruct-q4_k_m.gguf` (~2.0 GB) from Hugging Face with a real-time progress bar, speed, and ETA.
+  - Or manually download any `.gguf` into the `./models/` directory:
+    ```bash
+    curl -L -o models/qwen2.5-3b-instruct-q4_k_m.gguf "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_k_m.gguf"
+    ```
 
 ---
+
 
 ## 🛠️ Command Line Options
 
