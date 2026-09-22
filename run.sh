@@ -16,8 +16,21 @@ echo "=================================================="
 
 # Check ffmpeg
 if ! command -v ffmpeg &> /dev/null; then
-    echo "[ERROR] ffmpeg is not installed. Please install it with: brew install ffmpeg"
-    exit 1
+    if [[ "$OSTYPE" == "darwin"* ]] && command -v brew &> /dev/null; then
+        echo "[INFO] ffmpeg is required for video decoding and hardware encoding."
+        read -p "Install ffmpeg automatically via Homebrew now? [Y/n]: " -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+            echo "[INSTALL] Running: brew install ffmpeg..."
+            brew install ffmpeg
+        else
+            echo "[ERROR] ffmpeg is required. Exiting."
+            exit 1
+        fi
+    else
+        echo "[ERROR] ffmpeg is not installed. Please install it with: brew install ffmpeg"
+        exit 1
+    fi
 fi
 
 # Setup Virtualenv
