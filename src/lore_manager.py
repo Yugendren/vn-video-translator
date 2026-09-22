@@ -28,9 +28,9 @@ class LoreManager:
                 with open(target, 'r', encoding='utf-8') as f:
                     self.lore_data = json.load(f)
                 self.game_title = self.lore_data.get("game_title", self.game_title)
-                print(f"📖 Loaded lore preset: {self.game_title} ({os.path.basename(target)})")
+                print(f"[LORE] Loaded preset: {self.game_title} ({os.path.basename(target)})")
             except Exception as e:
-                print(f"⚠️ Failed to load lore file {target}: {e}")
+                print(f"[WARN] Failed to load lore file {target}: {e}")
 
     def get_character_map(self):
         """Returns dict of {OriginalName: EnglishName}."""

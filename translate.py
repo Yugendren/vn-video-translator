@@ -16,7 +16,7 @@ DEFAULT_OUTPUT_DIR = os.path.join(ROOT_DIR, "output")
 
 ABOUT_TEXT = """
 ================================================================================
-   🎮 VN Video Translator & Localizer — Overview & Best Practices Guide
+   VN Video Translator & Localizer - Overview & Quick Guide
 ================================================================================
 
 WHAT THIS TOOL DOES:
@@ -34,33 +34,33 @@ WHAT THIS TOOL DOES:
 WHICH ENGINE TO CHOOSE? (Option 1 vs Option 2)
 --------------------------------------------------------------------------------
   Option 1: Gemini Flash (Recommended for Story Quality)
-    • When to use: You want studio-level localization, nuanced character personalities
+    * When to use: You want studio-level localization, nuanced character personalities
       (teasing, formal maid, childish, mystical prophecies), and deep lore awareness.
-    • Cost: ~$0.001 per 30-minute episode (less than 1/10th of a cent).
-    • Speed: ~3 to 5 seconds for the entire episode.
-    • Setup: Free API key from Google AI Studio:
-      👉 https://aistudio.google.com/app/apikey
+    * Cost: ~$0.001 per 30-minute episode (less than 1/10th of a cent).
+    * Speed: ~3 to 5 seconds for the entire episode.
+    * Setup: Free API key from Google AI Studio:
+      https://aistudio.google.com/app/apikey
       If not already set in .env, the CLI interactively prompts and auto-saves it for you.
 
   Option 2: Local Model (Recommended for Offline / Bulk Processing)
-    • When to use: You want 100% free, 100% offline translation with zero API keys or accounts.
-    • Cost: $0.00 (completely free & private).
-    • Speed: ~45 seconds on Apple Silicon Metal GPU (Qwen 2.5 3B/7B).
-    • Setup: Zero manual configuration needed! The CLI automatically checks for llama.cpp
+    * When to use: You want 100% free, 100% offline translation with zero API keys or accounts.
+    * Cost: $0.00 (completely free & private).
+    * Speed: ~45 seconds on Apple Silicon Metal GPU (Qwen 2.5 3B/7B).
+    * Setup: Zero manual configuration needed. The CLI automatically checks for llama.cpp
       (offering one-click brew install) and auto-downloads Qwen 2.5 3B if no model is found.
 
 --------------------------------------------------------------------------------
 BEST PRACTICES & TIPS:
 --------------------------------------------------------------------------------
-  • Typography:
+  * Typography:
       --font latex   (Default: STIX Two Text / TeX book serif, looks stunning)
       --font arial   (Modern, clean sans-serif)
       --font times   (Classic serif)
-  • Text Fitting:
+  * Text Fitting:
       The font stays fixed at 28pt by default. If a line is exceptionally long,
       it automatically steps down to 24pt/20pt/16pt to ensure zero word collision
       or clipping. You can configure --font-size and --min-font-size.
-  • Lore & Context:
+  * Lore & Context:
       Pass --lore gfl2 (or --lore lore/my_vn.json) to enforce canonical names.
       Pass --context "Scene description" to provide background hints.
       Edit config/prompt_template.txt to change the base system prompt directly.
@@ -95,7 +95,7 @@ def process_single_video(video_path, title, output_dir, config, lore_mgr, engine
     out_srt_path = os.path.join(output_dir, f"{safe_title}_English.srt")
     
     print("\n" + "=" * 60)
-    print(f"🎬 Processing: {title}")
+    print(f"[PROCESS] Video: {title}")
     print("=" * 60)
     
     # 1. OCR scanning
@@ -109,13 +109,13 @@ def process_single_video(video_path, title, output_dir, config, lore_mgr, engine
             langs=",".join(config.get("ocr_languages", ["zh-Hans", "en-US"]))
         )
     else:
-        print(f"⏩ Found existing OCR data at {raw_ocr_json}, skipping scan.")
+        print(f"[CACHE] Found existing OCR data at {raw_ocr_json}, skipping scan.")
         
     # 2. Dialogue segmentation
     if not os.path.exists(cleaned_segments_json):
         segments = segment_raw_frames(raw_ocr_json, cleaned_segments_json)
     else:
-        print(f"⏩ Found existing dialogue segments at {cleaned_segments_json}.")
+        print(f"[CACHE] Found existing dialogue segments at {cleaned_segments_json}.")
         with open(cleaned_segments_json, "r", encoding="utf-8") as f:
             segments = json.load(f)
             
@@ -132,7 +132,7 @@ def process_single_video(video_path, title, output_dir, config, lore_mgr, engine
         with open(translated_json, "w", encoding="utf-8") as f:
             json.dump(translated, f, ensure_ascii=False, indent=2)
     else:
-        print(f"⏩ Found existing translations at {translated_json}.")
+        print(f"[CACHE] Found existing translations at {translated_json}.")
         with open(translated_json, "r", encoding="utf-8") as f:
             translated = json.load(f)
             
@@ -148,7 +148,7 @@ def process_single_video(video_path, title, output_dir, config, lore_mgr, engine
         work_dir=work_dir
     )
     
-    print(f"\n✨ Completed! Output video: {out_video_path}\n")
+    print(f"\n[SUCCESS] Completed. Output video: {out_video_path}\n")
     return out_video_path
 
 def read_links_file(filepath):
@@ -167,7 +167,7 @@ def main():
         sys.exit(0)
 
     parser = argparse.ArgumentParser(
-        description="🎮 Automated VN Video Translator & Localizer",
+        description="Automated VN Video Translator & Localizer",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -177,12 +177,12 @@ Examples:
   ./run.sh --add-link "https://www.bilibili.com/video/BV..."
   ./run.sh --about
 
-Use --about for a dead-simple explanation of Option 1 vs Option 2 and best practices.
+Use --about for a quick explanation of Option 1 vs Option 2 and best practices.
 """
     )
     
     parser.add_argument("input", nargs="?", help="Video URL, path to links.txt, or local video file (.mp4)")
-    parser.add_argument("--about", action="store_true", help="Show dead-simple guide on how it works & Option 1 vs 2")
+    parser.add_argument("--about", action="store_true", help="Show quick guide on how it works & Option 1 vs 2")
     parser.add_argument("--links", help="Path to links file (default: links.txt)", default="links.txt")
     parser.add_argument("--add-link", help="Append a URL to links.txt and immediately run")
     parser.add_argument("--engine", choices=["auto", "1", "2", "gemini", "local"], default="auto",
@@ -219,7 +219,7 @@ Use --about for a dead-simple explanation of Option 1 vs Option 2 and best pract
     if args.add_link:
         with open(args.links, "a", encoding="utf-8") as f:
             f.write(f"\n{args.add_link.strip()}\n")
-        print(f"➕ Added {args.add_link} to {args.links}")
+        print(f"[CONFIG] Added {args.add_link} to {args.links}")
         
     urls_to_process = []
     
@@ -240,7 +240,7 @@ Use --about for a dead-simple explanation of Option 1 vs Option 2 and best pract
         urls_to_process.extend(read_links_file(args.links))
         
     if not urls_to_process:
-        print("ℹ️ No links found in links.txt or command line.")
+        print("[INFO] No links found in links.txt or command line.")
         user_url = input("Enter a video URL to process (or press Enter to exit): ").strip()
         if user_url:
             urls_to_process.append(user_url)
@@ -248,9 +248,9 @@ Use --about for a dead-simple explanation of Option 1 vs Option 2 and best pract
             print("Exiting.")
             return
             
-    print(f"📋 Found {len(urls_to_process)} video URL(s) to process.")
+    print(f"[INFO] Found {len(urls_to_process)} video URL(s) to process.")
     for idx, url in enumerate(urls_to_process):
-        print(f"\n▶ [{idx + 1}/{len(urls_to_process)}] Downloading and processing: {url}")
+        print(f"\n[{idx + 1}/{len(urls_to_process)}] Downloading and processing: {url}")
         downloads_dir = os.path.join(output_dir, "downloads")
         video_path, title = download_video(url, downloads_dir)
         process_single_video(video_path, title, output_dir, config, lore_mgr, args.engine, args.api_key, args.model_path)

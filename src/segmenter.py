@@ -148,5 +148,5 @@ def segment_raw_frames(raw_frames_path, output_segments_path=None):
         with open(output_segments_path, 'w', encoding='utf-8') as f:
             json.dump(cleaned, f, ensure_ascii=False, indent=2)
             
-    print(f"📊 Aggregated {len(frames)} raw frames into {len(cleaned)} stabilized dialogue lines.")
+    print(f"[SEGMENTER] Aggregated {len(frames)} raw frames into {len(cleaned)} stabilized dialogue lines.")
     return cleaned

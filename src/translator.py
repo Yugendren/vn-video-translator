@@ -34,9 +34,9 @@ def save_api_key_to_env(key):
         lines.append(f"GEMINI_API_KEY={key}\n")
         with open(ENV_FILE, "w", encoding="utf-8") as f:
             f.writelines(lines)
-        print(f"💾 Saved GEMINI_API_KEY to {ENV_FILE}")
+        print(f"[CONFIG] Saved GEMINI_API_KEY to {ENV_FILE}")
     except Exception as e:
-        print(f"⚠️ Could not save to .env: {e}")
+        print(f"[WARN] Could not save to .env: {e}")
 
 def resolve_api_key(provided_key=None, allow_prompt=True):
     """
@@ -51,23 +51,23 @@ def resolve_api_key(provided_key=None, allow_prompt=True):
         return key.strip()
         
     if allow_prompt and sys.stdin.isatty():
-        print("\n" + "╔" + "═" * 72 + "╗")
-        print("║  🔑 Gemini API Key Required (Option 1)                                 ║")
-        print("╠" + "═" * 72 + "╣")
-        print("║  Option 1 uses Gemini 2.5 Flash for studio-quality localization.       ║")
-        print("║  Get your free API key in 30 seconds from Google AI Studio:            ║")
-        print("║                                                                        ║")
-        print("║  👉 https://aistudio.google.com/app/apikey                             ║")
-        print("║                                                                        ║")
-        print("║  Quick Steps:                                                          ║")
-        print("║  1. Open the URL above in your browser (log in with any Google account)║")
-        print("║  2. Click '+ Create API key' (100% free)                               ║")
-        print("║  3. Copy your key and paste it below                                   ║")
-        print("╚" + "═" * 72 + "╝")
+        print("\n" + "+------------------------------------------------------------------------+")
+        print("| Gemini API Key Required (Option 1)                                     |")
+        print("+------------------------------------------------------------------------+")
+        print("| Option 1 uses Gemini 2.5 Flash for studio-quality localization.        |")
+        print("| Get your free API key in 30 seconds from Google AI Studio:             |")
+        print("|                                                                        |")
+        print("| https://aistudio.google.com/app/apikey                                 |")
+        print("|                                                                        |")
+        print("| Quick Steps:                                                           |")
+        print("| 1. Open the URL above in your browser (log in with any Google account) |")
+        print("| 2. Click 'Create API key'                                              |")
+        print("| 3. Copy your key and paste it below                                    |")
+        print("+------------------------------------------------------------------------+")
         
         entered = input("\nEnter your Gemini API Key (or press Enter to switch to Local Model): ").strip()
         if entered:
-            save_choice = input("💾 Save key to .env so you don't have to enter it again? [Y/n]: ").strip().lower()
+            save_choice = input("Save key to .env for future runs? [Y/n]: ").strip().lower()
             if save_choice in ("", "y", "yes"):
                 save_api_key_to_env(entered)
             os.environ["GEMINI_API_KEY"] = entered
@@ -92,32 +92,32 @@ def ensure_llama_cpp_installed():
     if bin_path:
         return bin_path
         
-    print("\n" + "╔" + "═" * 72 + "╗")
-    print("║  ⚙️ llama.cpp is not installed                                         ║")
-    print("╠" + "═" * 72 + "╣")
-    print("║  Option 2 runs local models directly on your hardware (Metal GPU).     ║")
-    print("║  It requires 'llama.cpp' (specifically llama-server or llama-cli).     ║")
-    print("╚" + "═" * 72 + "╝")
+    print("\n" + "+------------------------------------------------------------------------+")
+    print("| llama.cpp is not installed                                             |")
+    print("+------------------------------------------------------------------------+")
+    print("| Option 2 runs local models directly on your hardware (Metal GPU).      |")
+    print("| It requires 'llama.cpp' (specifically llama-server or llama-cli).      |")
+    print("+------------------------------------------------------------------------+")
     
     brew_bin = shutil.which("brew") or ("/opt/homebrew/bin/brew" if os.path.exists("/opt/homebrew/bin/brew") else None)
     
     if sys.platform == "darwin" and brew_bin and sys.stdin.isatty():
         ans = input("\nWould you like to install llama.cpp via Homebrew now? (brew install llama.cpp) [Y/n]: ").strip().lower()
         if ans in ("", "y", "yes"):
-            print("\n📦 Running: brew install llama.cpp ... (this may take a couple minutes)")
+            print("\n[INSTALL] Running: brew install llama.cpp (this may take 1-2 minutes)...")
             try:
                 subprocess.run([brew_bin, "install", "llama.cpp"], check=True)
                 bin_path = check_llama_cpp_installed()
                 if bin_path:
-                    print("✅ llama.cpp installed successfully!\n")
+                    print("[SUCCESS] llama.cpp installed successfully.\n")
                     return bin_path
             except Exception as e:
-                print(f"⚠️ Homebrew installation failed: {e}")
+                print(f"[ERROR] Homebrew installation failed: {e}")
                 
-    print("\n💡 Please install llama.cpp manually:")
-    print("   • macOS:   brew install llama.cpp")
-    print("   • Ubuntu:  sudo apt install llama.cpp (or build from https://github.com/ggerganov/llama.cpp)")
-    print("   • Windows: Download binaries from https://github.com/ggerganov/llama.cpp/releases")
+    print("\n[INFO] Please install llama.cpp manually:")
+    print("   * macOS:   brew install llama.cpp")
+    print("   * Ubuntu:  sudo apt install llama.cpp (or build from https://github.com/ggerganov/llama.cpp)")
+    print("   * Windows: Download binaries from https://github.com/ggerganov/llama.cpp/releases")
     return None
 
 def find_local_model():
@@ -150,8 +150,8 @@ def download_file_with_progress(url, dest_path):
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     tmp_path = dest_path + ".tmp"
     filename = os.path.basename(dest_path)
-    print(f"\n⬇️ Downloading {filename}...")
-    print(f"   Source: {url}")
+    print(f"\n[DOWNLOAD] Fetching {filename}...")
+    print(f"  Source: {url}")
     
     req = urllib.request.Request(url, headers={"User-Agent": "VN-Video-Translator/1.0"})
     with urllib.request.urlopen(req) as resp:
@@ -183,12 +183,12 @@ def download_file_with_progress(url, dest_path):
                     
                     bar_width = 25
                     filled = int(bar_width * percent / 100)
-                    bar = "█" * filled + "░" * (bar_width - filled)
+                    bar = "=" * filled + " " * (bar_width - filled)
                     sys.stdout.write(f"\r  [{bar}] {percent:5.1f}% ({downloaded_mb:6.1f} / {total_mb:6.1f} MB) | {speed_mb:5.1f} MB/s | ETA: {eta_str:<6}")
                     sys.stdout.flush()
                     last_update = now
                     
-    print("\n✅ Download complete!")
+    print("\n[SUCCESS] Download complete.")
     if os.path.exists(dest_path):
         os.remove(dest_path)
     os.rename(tmp_path, dest_path)
@@ -206,16 +206,16 @@ def ensure_local_model_exists(preferred_path=None):
     models_dir = os.path.join(ROOT_DIR, "models")
     target_path = os.path.join(models_dir, DEFAULT_MODEL_NAME)
     
-    print("\n" + "╔" + "═" * 72 + "╗")
-    print("║  🤖 No Local GGUF Model Found                                          ║")
-    print("╠" + "═" * 72 + "╣")
-    print("║  Option 2 requires a GGUF model for offline translation.               ║")
-    print("║                                                                        ║")
-    print("║  Recommended Model: Qwen 2.5 3B Instruct (Q4_K_M)                      ║")
-    print("║  • Download size: ~2.0 GB (fits easily into 8GB+ RAM / Metal VRAM)     ║")
-    print("║  • Quality: Top-tier Chinese & Japanese VN dialogue translation        ║")
-    print("║  • Speed: ~35–50 tokens/sec on Apple Silicon Metal GPU                 ║")
-    print("╚" + "═" * 72 + "╝")
+    print("\n" + "+------------------------------------------------------------------------+")
+    print("| No Local GGUF Model Found                                              |")
+    print("+------------------------------------------------------------------------+")
+    print("| Option 2 requires a GGUF model for offline translation.                |")
+    print("|                                                                        |")
+    print("| Recommended Model: Qwen 2.5 3B Instruct (Q4_K_M)                       |")
+    print("| - Download size: ~2.0 GB (fits easily into 8GB+ RAM / Metal VRAM)      |")
+    print("| - Quality: High-accuracy Chinese and Japanese VN dialogue translation  |")
+    print("| - Speed: ~35-50 tokens/sec on Apple Silicon Metal GPU                  |")
+    print("+------------------------------------------------------------------------+")
     
     if sys.stdin.isatty():
         ans = input("\nWould you like to auto-download Qwen2.5-3B-Instruct now to ./models/? [Y/n]: ").strip().lower()
@@ -224,17 +224,17 @@ def ensure_local_model_exists(preferred_path=None):
                 download_file_with_progress(DEFAULT_MODEL_URL, target_path)
                 return target_path
             except KeyboardInterrupt:
-                print("\n⚠️ Download cancelled by user.")
+                print("\n[INFO] Download cancelled by user.")
                 if os.path.exists(target_path + ".tmp"):
                     os.remove(target_path + ".tmp")
                 return None
             except Exception as e:
-                print(f"\n⚠️ Download failed: {e}")
+                print(f"\n[ERROR] Download failed: {e}")
                 if os.path.exists(target_path + ".tmp"):
                     os.remove(target_path + ".tmp")
                 return None
                 
-    print("\n💡 You can manually download the model:")
+    print("\n[INFO] You can manually download the model:")
     print(f"   curl -L -o models/{DEFAULT_MODEL_NAME} \"{DEFAULT_MODEL_URL}\"")
     print("   Or place any .gguf model into the models/ folder.")
     return None
@@ -272,7 +272,7 @@ class GeminiTranslator:
                 text_resp = resp_body["candidates"][0]["content"]["parts"][0]["text"]
                 return json.loads(text_resp)
         except Exception as e:
-            print(f"⚠️ Gemini batch error: {e}")
+            print(f"[WARN] Gemini batch error: {e}")
             return lines_batch
 
 class LocalLlamaTranslator:
@@ -301,7 +301,7 @@ class LocalLlamaTranslator:
         except Exception:
             pass
             
-        print(f"⚡ Launching local llama-server with {os.path.basename(self.model_path)} on port {self.port}...")
+        print(f"[SERVER] Launching local llama-server with {os.path.basename(self.model_path)} on port {self.port}...")
         cmd = [
             self.server_bin,
             "-m", self.model_path,
@@ -319,7 +319,7 @@ class LocalLlamaTranslator:
                 req = urllib.request.Request(f"http://127.0.0.1:{self.port}/health")
                 with urllib.request.urlopen(req, timeout=1) as resp:
                     if resp.status == 200:
-                        print("✅ Local llama-server is ready!")
+                        print("[SERVER] Local llama-server is ready.")
                         return
             except Exception:
                 pass
@@ -360,7 +360,7 @@ class LocalLlamaTranslator:
                             return v
                 return lines_batch
         except Exception as e:
-            print(f"⚠️ Local model translation error: {e}")
+            print(f"[WARN] Local model translation error: {e}")
             return lines_batch
 
 def select_engine(choice=None):
@@ -380,16 +380,16 @@ def select_engine(choice=None):
     if not sys.stdin.isatty():
         return "gemini" if has_gemini else "local"
         
-    print("\n" + "╔" + "═" * 72 + "╗")
-    print("║        🤖 Choose Translation Engine                                    ║")
-    print("╠" + "═" * 72 + "╣")
-    print("║  [1] Option 1: Gemini Flash (Cloud, studio-quality, ~$0.001/video)     ║")
-    print("║      • Nuanced personalities, lore fidelity, 3s translation speed     ║")
-    print("║      • Requires free API key (https://aistudio.google.com/app/apikey)  ║")
-    print("║                                                                        ║")
-    print("║  [2] Option 2: Local Model  (Qwen 2.5 / llama.cpp, 100% offline)      ║")
-    print("║      • Free, private, no API keys, runs on Apple Silicon Metal GPU    ║")
-    print("╚" + "═" * 72 + "╝")
+    print("\n" + "+------------------------------------------------------------------------+")
+    print("| Choose Translation Engine                                              |")
+    print("+------------------------------------------------------------------------+")
+    print("| [1] Option 1: Gemini Flash (Cloud, studio-quality, ~$0.001/video)      |")
+    print("|     - Nuanced personalities, lore fidelity, 3s translation speed       |")
+    print("|     - Requires free API key (https://aistudio.google.com/app/apikey)   |")
+    print("|                                                                        |")
+    print("| [2] Option 2: Local Model  (Qwen 2.5 / llama.cpp, 100% offline)        |")
+    print("|     - Free, private, no API keys, runs on Apple Silicon Metal GPU      |")
+    print("+------------------------------------------------------------------------+")
     
     user_choice = input("\nSelect option [1/2] (default: 1): ").strip()
     return "local" if user_choice == "2" else "gemini"
@@ -401,11 +401,11 @@ def translate_segments(segments, engine="auto", api_key=None, lore_manager=None,
     if engine_selected == "gemini":
         key = resolve_api_key(api_key)
         if not key:
-            print("⚠️ Switching to Option 2 (Local Model) since no Gemini API key was provided.\n")
+            print("[WARN] Switching to Option 2 (Local Model) since no Gemini API key was provided.\n")
             try:
                 translator = LocalLlamaTranslator(lore_manager=lore_manager, model_path=model_path)
             except Exception as e:
-                print(f"❌ Failed to initialize Local Model: {e}")
+                print(f"[ERROR] Failed to initialize Local Model: {e}")
                 raise
         else:
             translator = GeminiTranslator(api_key=key, lore_manager=lore_manager)
@@ -413,7 +413,7 @@ def translate_segments(segments, engine="auto", api_key=None, lore_manager=None,
         try:
             translator = LocalLlamaTranslator(lore_manager=lore_manager, model_path=model_path)
         except Exception as e:
-            print(f"\n⚠️ Local Model setup could not be completed: {e}")
+            print(f"\n[WARN] Local Model setup could not be completed: {e}")
             if sys.stdin.isatty():
                 retry = input("Would you like to switch to Option 1 (Gemini Flash Cloud) instead? [Y/n]: ").strip().lower()
                 if retry in ("", "y", "yes"):
@@ -423,7 +423,7 @@ def translate_segments(segments, engine="auto", api_key=None, lore_manager=None,
             if not translator:
                 raise
         
-    print(f"🌐 Translating {len(segments)} dialogue segments via {type(translator).__name__}...")
+    print(f"[TRANSLATE] Translating {len(segments)} dialogue segments via {type(translator).__name__}...")
     
     # Format input lines with speaker context
     char_map = lore_manager.get_character_map() if lore_manager else {}
@@ -456,5 +456,5 @@ def translate_segments(segments, engine="auto", api_key=None, lore_manager=None,
     if hasattr(translator, "server_proc") and translator.server_proc:
         translator.server_proc.terminate()
         
-    print(f"✅ Finished translating {len(translated_segments)} segments.")
+    print(f"[SUCCESS] Finished translating {len(translated_segments)} segments.")
     return translated_segments

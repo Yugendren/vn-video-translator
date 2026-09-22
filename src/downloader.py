@@ -27,7 +27,7 @@ def download_video(url, output_dir):
     clean_title = sanitize_filename(info["title"])[:50]
     out_template = os.path.join(output_dir, f"{clean_title}_raw.%(ext)s")
     
-    print(f"📥 Downloading video: {info['title']}...")
+    print(f"[DOWNLOAD] Fetching video: {info['title']}...")
     cmd = [
         "yt-dlp",
         "--no-playlist",

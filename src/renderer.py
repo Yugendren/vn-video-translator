@@ -26,7 +26,7 @@ def export_subtitles(segments, srt_path):
                 f.write(f"<b>[{spk}]</b> {text}\n\n")
             else:
                 f.write(f"{text}\n\n")
-    print(f"📝 Subtitles exported to: {srt_path}")
+    print(f"[SUBTITLES] Exported to: {srt_path}")
 
 def render_overlays_and_video(
     video_path,
@@ -65,7 +65,7 @@ def render_overlays_and_video(
     
     spk_font = ImageFont.truetype(spk_font_path, spk_font_size)
     
-    print(f"🎨 Generating {len(segments)} dialogue overlays (Font: {os.path.basename(font_path)}, Base: {base_font_size}pt, Min: {min_font_size}pt)...")
+    print(f"[RENDER] Generating {len(segments)} dialogue overlays (Font: {os.path.basename(font_path)}, Base: {base_font_size}pt, Min: {min_font_size}pt)...")
     
     for idx, seg in enumerate(segments):
         text = seg.get("en_text", seg.get("text", ""))
@@ -145,7 +145,7 @@ def render_overlays_and_video(
     vcodec = "h264_videotoolbox" if use_videotoolbox else "libx264"
     bitrate = config.get("video_bitrate", "4500k")
     
-    print(f"🎬 Burning overlays into video using {vcodec} acceleration...")
+    print(f"[RENDER] Burning overlays into video using {vcodec} acceleration...")
     ffmpeg_cmd = [
         "ffmpeg", "-y",
         "-i", video_path,
@@ -167,5 +167,5 @@ def render_overlays_and_video(
     if proc.returncode != 0:
         raise RuntimeError("FFmpeg rendering failed.")
         
-    print(f"🎉 Final subbed video created: {output_video_path}")
+    print(f"[RENDER] Final subbed video created: {output_video_path}")
     return output_video_path

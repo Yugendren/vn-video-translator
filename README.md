@@ -1,188 +1,108 @@
-# 🎮 VN Video Translator & Localizer
+# VN Video Translator
 
-An automated, hardware-accelerated pipeline designed to download, OCR-transcribe, lore-translate, and naturally hardcode subtitles for **Visual Novel cutscenes and story videos** (e.g. *Girls' Frontline 2: Exilium*, *Genshin Impact*, *Honkai: Star Rail*, *Arknights*, *Fate/Grand Order*, and standalone VN games).
+An automated pipeline designed to download, transcribe via native Apple Silicon Vision OCR, translate with lore accuracy, and render localized dialogue overlays onto Visual Novel and game cutscene videos.
 
----
-
-## ✨ Key Features
-
-- **⚡ Native Apple Silicon OCR:** Uses macOS's Vision framework via Swift (`VNRecognizeTextRequest`) to extract Chinese/Japanese dialogue text directly from the dialogue box at **~12–15× real-time speed** on your Mac's Neural Engine.
-- **🔄 Typewriter De-duplication:** Automatically stabilizes typewriter text animations and merges incremental frame prefixes into clean, contiguous dialogue turns with exact timestamps.
-- **🤖 Dual Translation Engines (Option 1 vs Option 2):**
-  - **Option 1 (Gemini Flash Cloud):** Studio-quality localization, capturing distinct character personalities and deep game lore for less than **one-tenth of a cent (~$0.0009)** per 30-minute episode.
-  - **Option 2 (Local Qwen Model / llama.cpp):** **100% offline, 100% free**, zero API key required, runs locally on your Mac's Metal GPU at ~35–50 tokens/sec.
-- **📐 Smart Dynamic Text Space & Auto-Fitting:** Fixed base font size (`28pt`) for 95% of normal lines. If an exceptionally long line exceeds the dialogue box, it automatically decrements font size step-by-step (`28pt → 26pt → 24pt → 20pt → 16pt`) to guarantee zero text overflow or edge collision.
-- **✒️ Bundled LaTeX & Custom Typography:** Includes authentic LaTeX serif (`STIX Two Text`), modern sans-serif (`Arial`), and classic book serif (`Times New Roman`) out of the box.
-- **📖 Universal Lorebook & Context System:** Provide character rosters, speech quirks, and faction glossaries via `--lore` files or pass scene context on the fly with `--context`. The base prompt is directly editable in `config/prompt_template.txt`.
-- **🚀 Hardware Video Acceleration:** Uses macOS `h264_videotoolbox` in FFmpeg to composite and render 1080p subbed videos at **200+ FPS (~7.6× real-time)**.
-- **📦 Dual Output:** Produces both the **hardcoded 1080p MP4** and a standalone **`.srt` subtitle file**.
+Produces both hardcoded 1080p MP4 videos and standalone `.srt` subtitle files.
 
 ---
 
-## 🚀 Quick Start (One-Line Run)
+## Quick Start
 
-### 1. Clone the repository
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/yugendren/vn-video-translator.git
 cd vn-video-translator
 ```
 
-### 2. View Quick Guide
+### 2. Prerequisites
+Requires macOS with Homebrew installed:
 ```bash
-./run.sh --about
+brew install ffmpeg yt-dlp
 ```
 
-### 3. Run the Pipeline
-
-#### Batch process from `links.txt`
-Paste your Bilibili or YouTube links into `links.txt`, then run:
+### 3. Run Pipeline
+Add your video links to `links.txt`, then run:
 ```bash
 ./run.sh
 ```
 
-#### Option 1: High-Quality Cloud (Gemini Flash)
+---
+
+## Translation Engines
+
+The pipeline supports two translation engines:
+
+| Feature | Option 1: Gemini Flash (Cloud) | Option 2: Local Model (llama.cpp) |
+| :--- | :--- | :--- |
+| **Best For** | Studio-quality localization, tone & character nuances | Offline usage, privacy, bulk processing |
+| **Cost** | ~$0.001 per 30-minute episode | Free |
+| **Speed** | 3 to 5 seconds per episode | ~45 seconds on Apple Silicon GPU |
+| **Setup** | Free API key from [Google AI Studio](https://aistudio.google.com/app/apikey) | Auto-downloads Qwen 2.5 3B (~2.0 GB) |
+
+### Option 1 Setup (Gemini Flash)
+On first launch, the CLI prompts for your free Google AI Studio key and offers to save it automatically to `.env`. Alternatively, set it in your environment:
+```bash
+export GEMINI_API_KEY="your_api_key_here"
+```
+
+### Option 2 Setup (Local Qwen Model)
+No API key or account required. If `llama.cpp` or the recommended model (`Qwen2.5-3B-Instruct`) is missing, the CLI offers to install and download them automatically.
+
+---
+
+## Common Commands
+
+### Batch Processing
+Process all URLs listed in `links.txt`:
+```bash
+./run.sh
+```
+
+### Single Video via Option 1 (Cloud)
 ```bash
 ./run.sh "https://www.bilibili.com/video/BV1sbhk6GEtY?p=1" --engine 1 --lore gfl2
 ```
 
-#### Option 2: 100% Free & Offline (Local Qwen Model)
+### Single Video via Option 2 (Local)
 ```bash
 ./run.sh "https://www.bilibili.com/video/BV1sbhk6GEtY?p=1" --engine 2 --font latex
 ```
 
-#### Append a URL to `links.txt` and immediately run
+### Append Link and Run Immediately
 ```bash
 ./run.sh --add-link "https://www.bilibili.com/video/BV..."
 ```
 
-#### Process a local video file
+### Process Local MP4 File
 ```bash
-./run.sh /path/to/my_recording.mp4
+./run.sh /path/to/recording.mp4
+```
+
+### Quick Help and Flag Reference
+```bash
+./run.sh --help
+./run.sh --about
 ```
 
 ---
 
-## 🚀 First-Launch & Engine Setup (Zero Friction)
+## Typography Options
 
-The pipeline is designed to be completely beginner-friendly. On first launch, it walks you through whichever option you choose:
+- `--font latex`: STIX Two Text (default authentic LaTeX book serif)
+- `--font arial`: Clean modern sans-serif
+- `--font times`: Classic roman serif
+- `--font /path/to/font.ttf`: Any custom TTF/OTF font file
 
-### Option 1: Gemini Flash Cloud (Studio Localization)
-- **Free Key Link:** [Google AI Studio (https://aistudio.google.com/app/apikey)](https://aistudio.google.com/app/apikey)
-- **First Launch Experience:** If no key is configured, the CLI displays a clear dialog with the direct link above, prompts you to paste the key, and asks:
-  ```text
-  💾 Save key to .env so you don't have to enter it again? [Y/n]:
-  ```
-  Answering `y` writes it to `.env` permanently.
-- **Alternative ways to supply the key:**
-  - `.env` file in repo root: `GEMINI_API_KEY=AIzaSy...`
-  - Shell environment: `export GEMINI_API_KEY="AIzaSy..."`
-  - CLI flag: `./run.sh "https://..." --api-key "AIzaSy..."`
-
-### Option 2: Local Qwen Model (100% Free & Offline)
-- **Zero API keys or accounts required.**
-- **Automatic llama.cpp Verification:**
-  - On macOS, if `llama-server` is not installed, the CLI prompts:
-    ```text
-    Would you like to install llama.cpp via Homebrew now? (brew install llama.cpp) [Y/n]:
-    ```
-    Confirming automatically installs it with full Apple Silicon Metal GPU acceleration.
-- **Automatic Model Download:**
-  - The CLI looks in `./models/` and your HuggingFace cache (`~/.cache/huggingface/hub`).
-  - If no model is found, it asks:
-    ```text
-    Would you like to auto-download Qwen2.5-3B-Instruct now to ./models/? [Y/n]:
-    ```
-    Confirming streams `qwen2.5-3b-instruct-q4_k_m.gguf` (~2.0 GB) from Hugging Face with a real-time progress bar, speed, and ETA.
-  - Or manually download any `.gguf` into the `./models/` directory:
-    ```bash
-    curl -L -o models/qwen2.5-3b-instruct-q4_k_m.gguf "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_k_m.gguf"
-    ```
+Dialogue lines stay fixed at `28pt` by default. Long lines automatically downscale dynamically to prevent dialogue box overflow or edge collision.
 
 ---
 
+## Technical Documentation
 
-## 🛠️ Command Line Options
-
-```text
-usage: translate.py [-h] [--about] [--links LINKS] [--add-link ADD_LINK]
-                    [--engine {auto,1,2,gemini,local}] [--api-key API_KEY]
-                    [--model-path MODEL_PATH] [--font FONT]
-                    [--font-size FONT_SIZE] [--min-font-size MIN_FONT_SIZE]
-                    [--lore LORE] [--context CONTEXT]
-                    [--target-lang TARGET_LANG] [--config CONFIG]
-                    [--output OUTPUT]
-                    [input]
-
-options:
-  --about               Show dead-simple guide on how it works & Option 1 vs 2
-  --links LINKS         Path to links file (default: links.txt)
-  --add-link ADD_LINK   Append a URL to links.txt and immediately run
-  --engine {1,2,auto}   [1/gemini] = Gemini Flash, [2/local] = Local Qwen model
-  --api-key API_KEY     Gemini API Key (Option 1)
-  --model-path PATH     Path to local .gguf model (Option 2)
-  --font FONT           Subtitle font: latex, arial, times, or path to .ttf (default: latex)
-  --font-size SIZE      Base dialogue font size in pt (default: 28)
-  --min-font-size SIZE  Minimum font size for auto-fitting long lines (default: 16)
-  --lore LORE           Lore preset or JSON path (e.g. gfl2, genshin, or lore/custom.json)
-  --context CONTEXT     One-off scene context or background notes for the translator
-  --target-lang LANG    Target language (default: English)
-  --config CONFIG       Path to configuration JSON (default: config/default.json)
-  --output OUTPUT       Output directory (default: output/)
-```
+For detailed architecture diagrams, Apple Neural Engine OCR specifications, typewriter de-duplication algorithms, lore configuration schemas, and full parameter references, see [DETAILS.md](DETAILS.md).
 
 ---
 
-## 📖 Universal Lore & Context System
+## License
 
-To translate **any** visual novel or anime game with lore accuracy:
-
-1. **Pre-built Lore Presets:**
-   - `--lore gfl2` (*Girls' Frontline 2: Exilium*)
-   - `--lore lore/template.json` (Custom starter template)
-
-2. **Custom Lore JSON (`lore/my_game.json`):**
-   ```json
-   {
-     "game_title": "Fate/stay night",
-     "synopsis": "Fifth Holy Grail War in Fuyuki City.",
-     "characters": {
-       "远坂凛": { "en_name": "Rin Tohsaka", "voice": "Tsundere, sharp-tongued, proud mage." },
-       "卫宫士郎": { "en_name": "Shirou Emiya", "voice": "Earnest, idealistic, stubborn." }
-     },
-     "glossary": {
-       "圣杯战争": "Holy Grail War",
-       "令咒": "Command Spells",
-       "宝具": "Noble Phantasm"
-     }
-   }
-   ```
-
-3. **Editable Base Prompt:**
-   You can customize the base system prompt directly in `config/prompt_template.txt`. Both Gemini and the local model use this template.
-
----
-
-## 🏗️ Architecture
-
-```mermaid
-flowchart TD
-    A["Video Source (Bilibili / YouTube / Local MP4)"] --> B["yt-dlp (Native 1080p Stream)"]
-    B --> C["Native Swift Vision OCR (Apple Neural Engine, ~15x Speed)"]
-    C --> D["Segmenter & Typewriter De-duplicator"]
-    D --> E{"Translation Engine"}
-    E -->|"Option 1"| F["Gemini Flash Batch API (~$0.001, 3s)"]
-    E -->|"Option 2"| G["Local Qwen / llama.cpp (100% Free & Offline)"]
-    F & G --> H["Adaptive Dynamic Text Space Layout Engine (LaTeX Font)"]
-    H --> I["Pillow Custom Dialogue Box Renderer"]
-    H --> J["SRT Subtitle Exporter"]
-    I --> K["FFmpeg VideoToolbox (Apple Silicon Hardware Encoding, 200+ FPS)"]
-    K --> L["🎬 Hardcoded 1080p Subbed Video"]
-    J --> M["📝 Standalone .srt File"]
-```
-
----
-
-## 📋 Requirements
-- **macOS** (Apple Silicon M1/M2/M3/M4 recommended for native Vision OCR and VideoToolbox)
-- **Homebrew:** `brew install ffmpeg yt-dlp`
-- **Python 3.10+** (virtual environment managed automatically by `./run.sh`)
+MIT License. See [LICENSE](LICENSE) for details.
