@@ -1,0 +1,21 @@
+{
+  "game_title": "Visual Novel / Anime Game Title",
+  "synopsis": "Brief overview of the setting, world, and current story arc.",
+  "characters": {
+    "OriginalName1": {
+      "en_name": "EnglishName1",
+      "voice": "Speech style (e.g. formal, cold maid, energetic, playful)"
+    },
+    "OriginalName2": {
+      "en_name": "EnglishName2",
+      "voice": "Speech style"
+    }
+  },
+  "glossary": {
+    "TermInChinese": "OfficialEnglishTerm",
+    "FactionName": "OfficialFactionName"
+  },
+  "notes": [
+    "Special translation instructions or tone notes"
+  ]
+}

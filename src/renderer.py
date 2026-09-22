@@ -1,10 +1,10 @@
 import os
 import sys
 import json
-import textwrap
 import subprocess
 from PIL import Image, ImageDraw, ImageFont
 from .glossary import resolve_speaker
+from .layout import resolve_font_path, resolve_speaker_font, fit_dialogue_text
 
 def format_srt_time(sec):
     h = int(sec // 3600)
@@ -38,21 +38,35 @@ def render_overlays_and_video(
     overlays_dir = os.path.join(work_dir, "overlays")
     os.makedirs(overlays_dir, exist_ok=True)
     
-    # 1. Blank transparent background
     blank = Image.new('RGBA', (1920, 1080), (0, 0, 0, 0))
     blank.save(os.path.join(overlays_dir, "blank.png"))
     
-    # Fonts
-    font_speaker_path = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
-    font_text_path = "/System/Library/Fonts/Supplemental/Arial.ttf"
+    # Resolve typography
+    font_arg = config.get("font", "latex")
+    font_path = resolve_font_path(font_arg)
+    spk_font_path = resolve_speaker_font(font_path)
     
-    spk_font = ImageFont.truetype(font_speaker_path, config.get("speaker_font_size", 30))
-    txt_font = ImageFont.truetype(font_text_path, config.get("dialogue_font_size", 27))
+    base_font_size = config.get("font_size", 28)
+    min_font_size = config.get("min_font_size", 16)
+    spk_font_size = config.get("speaker_font_size", 30)
     
     box_rect = config.get("box_rect_1080p", [78, 825, 1842, 1047])
     box_color = tuple(config.get("box_color", [14, 24, 27, 248]))
     
-    print(f"🎨 Generating {len(segments)} dialogue overlay textures...")
+    padding_x = config.get("padding_x", 34)
+    padding_y = config.get("padding_y", 22)
+    
+    box_w = box_rect[2] - box_rect[0]
+    box_h = box_rect[3] - box_rect[1]
+    
+    avail_w = box_w - (2 * padding_x)
+    avail_h_dialogue = box_h - (2 * padding_y) - 45 # Reserve 45px for speaker header
+    avail_h_narration = box_h - (2 * padding_y)
+    
+    spk_font = ImageFont.truetype(spk_font_path, spk_font_size)
+    
+    print(f"🎨 Generating {len(segments)} dialogue overlays (Font: {os.path.basename(font_path)}, Base: {base_font_size}pt, Min: {min_font_size}pt)...")
+    
     for idx, seg in enumerate(segments):
         text = seg.get("en_text", seg.get("text", ""))
         spk = resolve_speaker(seg.get("speaker"))
@@ -60,25 +74,46 @@ def render_overlays_and_video(
         img = blank.copy()
         draw = ImageDraw.Draw(img)
         
-        # Dark rounded box matching game dialogue UI
+        # Draw translucent dialogue box
         draw.rounded_rectangle(box_rect, radius=10, fill=box_color)
         
-        # Text wrapping
-        wrapped_lines = textwrap.wrap(text, width=86)
-        wrapped_text = "\n".join(wrapped_lines)
-        
         if spk:
-            draw.text((112, 846), f"|||| {spk}", fill=(255, 255, 255, 255), font=spk_font)
-            draw.text((112, 894), wrapped_text, fill=(240, 245, 250, 255), font=txt_font, spacing=7)
+            # Speaker header
+            spk_y = box_rect[1] + padding_y
+            draw.text((box_rect[0] + padding_x, spk_y), f"|||| {spk}", fill=(255, 255, 255, 255), font=spk_font)
+            
+            # Dynamic auto-fitting for dialogue text
+            fitted_font, wrapped_text, used_size = fit_dialogue_text(
+                draw=draw,
+                text=text,
+                max_w=avail_w,
+                max_h=avail_h_dialogue,
+                font_path=font_path,
+                base_size=base_font_size,
+                min_size=min_font_size,
+                line_spacing=6
+            )
+            text_y = spk_y + 44
+            draw.text((box_rect[0] + padding_x, text_y), wrapped_text, fill=(240, 245, 250, 255), font=fitted_font, spacing=6)
         else:
-            draw.text((112, 868), wrapped_text, fill=(235, 242, 248, 255), font=txt_font, spacing=8)
+            # Narration / inner monologue
+            fitted_font, wrapped_text, used_size = fit_dialogue_text(
+                draw=draw,
+                text=text,
+                max_w=avail_w,
+                max_h=avail_h_narration,
+                font_path=font_path,
+                base_size=base_font_size,
+                min_size=min_font_size,
+                line_spacing=7
+            )
+            text_y = box_rect[1] + padding_y + 14
+            draw.text((box_rect[0] + padding_x, text_y), wrapped_text, fill=(235, 242, 248, 255), font=fitted_font, spacing=7)
             
         img.save(os.path.join(overlays_dir, f"seg_{idx:03d}.png"))
         
-    # 2. Concat script
+    # Concat script
     concat_path = os.path.join(work_dir, "concat.txt")
-    
-    # Get video duration via ffprobe
     probe_cmd = ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", video_path]
     res = subprocess.run(probe_cmd, capture_output=True, text=True)
     total_duration = float(res.stdout.strip()) if res.returncode == 0 else 3600.0
@@ -104,14 +139,13 @@ def render_overlays_and_video(
             f.write(f"duration {total_duration - current_time:.3f}\n")
         f.write("file 'overlays/blank.png'\n")
         
-    # 3. Hardware accelerated rendering with FFmpeg
-    # Check if videotoolbox is available
+    # FFmpeg hardware acceleration check
     check_enc = subprocess.run(["ffmpeg", "-encoders"], capture_output=True, text=True)
     use_videotoolbox = "h264_videotoolbox" in check_enc.stdout
     vcodec = "h264_videotoolbox" if use_videotoolbox else "libx264"
     bitrate = config.get("video_bitrate", "4500k")
     
-    print(f"🎬 Burning overlays into video using {vcodec} hardware acceleration...")
+    print(f"🎬 Burning overlays into video using {vcodec} acceleration...")
     ffmpeg_cmd = [
         "ffmpeg", "-y",
         "-i", video_path,
@@ -133,5 +167,5 @@ def render_overlays_and_video(
     if proc.returncode != 0:
         raise RuntimeError("FFmpeg rendering failed.")
         
-    print(f"🎉 Final translated video created at: {output_video_path}")
+    print(f"🎉 Final subbed video created: {output_video_path}")
     return output_video_path

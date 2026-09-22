@@ -1,15 +1,19 @@
 # 🎮 VN Video Translator & Localizer
 
-An automated, hardware-accelerated pipeline designed to download, OCR-transcribe, lore-translate, and naturally hardcode subtitles for **Visual Novel cutscenes and story videos** (e.g. *Girls' Frontline 2: Exilium*, *Genshin Impact*, *Honkai: Star Rail*, *Arknights*, *Fate/Grand Order*, and classic VN games).
+An automated, hardware-accelerated pipeline designed to download, OCR-transcribe, lore-translate, and naturally hardcode subtitles for **Visual Novel cutscenes and story videos** (e.g. *Girls' Frontline 2: Exilium*, *Genshin Impact*, *Honkai: Star Rail*, *Arknights*, *Fate/Grand Order*, and standalone VN games).
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-- **⚡ Native Apple Silicon OCR:** Uses macOS's native Vision framework via Swift (`VNRecognizeTextRequest`) to extract Chinese/Japanese dialogue text directly from the bottom text box at **~12–15× real-time speed** on your Mac's Neural Engine.
+- **⚡ Native Apple Silicon OCR:** Uses macOS's Vision framework via Swift (`VNRecognizeTextRequest`) to extract Chinese/Japanese dialogue text directly from the dialogue box at **~12–15× real-time speed** on your Mac's Neural Engine.
 - **🔄 Typewriter De-duplication:** Automatically stabilizes typewriter text animations and merges incremental frame prefixes into clean, contiguous dialogue turns with exact timestamps.
-- **🌐 Studio-Quality Translation:** Sends structured text batches to Gemini Flash for lore-accurate, immersive English translation—costing less than **one-tenth of a cent (~$0.0009)** per 30-minute episode.
-- **🎨 Natural Game UI Overlays:** Seamlessly covers original foreign text boxes with authentic translucent banners, matching fonts, and `|||| Character` speaker tags.
+- **🤖 Dual Translation Engines (Option 1 vs Option 2):**
+  - **Option 1 (Gemini Flash Cloud):** Studio-quality localization, capturing distinct character personalities and deep game lore for less than **one-tenth of a cent (~$0.0009)** per 30-minute episode.
+  - **Option 2 (Local Qwen Model / llama.cpp):** **100% offline, 100% free**, zero API key required, runs locally on your Mac's Metal GPU at ~35–50 tokens/sec.
+- **📐 Smart Dynamic Text Space & Auto-Fitting:** Fixed base font size (`28pt`) for 95% of normal lines. If an exceptionally long line exceeds the dialogue box, it automatically decrements font size step-by-step (`28pt → 26pt → 24pt → 20pt → 16pt`) to guarantee zero text overflow or edge collision.
+- **✒️ Bundled LaTeX & Custom Typography:** Includes authentic LaTeX serif (`STIX Two Text`), modern sans-serif (`Arial`), and classic book serif (`Times New Roman`) out of the box.
+- **📖 Universal Lorebook & Context System:** Provide character rosters, speech quirks, and faction glossaries via `--lore` files or pass scene context on the fly with `--context`. The base prompt is directly editable in `config/prompt_template.txt`.
 - **🚀 Hardware Video Acceleration:** Uses macOS `h264_videotoolbox` in FFmpeg to composite and render 1080p subbed videos at **200+ FPS (~7.6× real-time)**.
 - **📦 Dual Output:** Produces both the **hardcoded 1080p MP4** and a standalone **`.srt` subtitle file**.
 
@@ -23,86 +27,120 @@ git clone https://github.com/your-username/vn-video-translator.git
 cd vn-video-translator
 ```
 
-### 2. Set your Gemini API key (optional)
-You can create a `.env` file or export the variable in your terminal:
+### 2. View Quick Guide
 ```bash
-export GEMINI_API_KEY="your_api_key_here"
+./run.sh --about
 ```
-*(If omitted, you will be prompted securely in the terminal).*
 
-### 3. Run the pipeline
+### 3. Run the Pipeline
 
-#### Option A: Process links from `links.txt`
-Simply paste your Bilibili or YouTube links into `links.txt`, then run:
+#### Batch process from `links.txt`
+Paste your Bilibili or YouTube links into `links.txt`, then run:
 ```bash
 ./run.sh
 ```
 
-#### Option B: Pass a single URL directly
+#### Option 1: High-Quality Cloud (Gemini Flash)
 ```bash
-./run.sh "https://www.bilibili.com/video/BV1sbhk6GEtY?p=1"
+./run.sh "https://www.bilibili.com/video/BV1sbhk6GEtY?p=1" --engine 1 --lore gfl2
 ```
 
-#### Option C: Add a new link to `links.txt` and immediately run
+#### Option 2: 100% Free & Offline (Local Qwen Model)
 ```bash
-./run.sh --add-link "https://www.bilibili.com/video/BV1sbhk6GEtY?p=2"
+./run.sh "https://www.bilibili.com/video/BV1sbhk6GEtY?p=1" --engine 2 --font latex
 ```
 
-#### Option D: Process a local video file
+#### Append a URL to `links.txt` and immediately run
 ```bash
-./run.sh /path/to/my_gameplay_recording.mp4
+./run.sh --add-link "https://www.bilibili.com/video/BV..."
+```
+
+#### Process a local video file
+```bash
+./run.sh /path/to/my_recording.mp4
 ```
 
 ---
 
-## 🛠️ CLI Options
+## 🔑 Where Does the API Key Go? (Option 1)
+
+If using **Option 1 (Gemini Flash)**, you can supply your key in any of these ways:
+1. **`.env` file in the repo root:**
+   ```env
+   GEMINI_API_KEY=AIzaSy...
+   ```
+2. **Environment variable:**
+   ```bash
+   export GEMINI_API_KEY="AIzaSy..."
+   ```
+3. **Command line argument:**
+   ```bash
+   ./run.sh "https://..." --api-key "AIzaSy..."
+   ```
+4. **Interactive Prompt:** If no key is detected, the CLI will prompt you once and offer to automatically save it to `.env` so you never have to type it again.
+
+*(For **Option 2 (Local Model)**, no API key or account is needed at all).*
+
+---
+
+## 🛠️ Command Line Options
 
 ```text
-usage: translate.py [-h] [--links LINKS] [--add-link ADD_LINK] [--config CONFIG]
-                    [--output OUTPUT] [--api-key API_KEY] [--target-lang TARGET_LANG]
-                    [--game GAME] [input]
-
-Automated VN Video Translator & Localizer
-
-positional arguments:
-  input                 URL, path to links.txt, or video file
+usage: translate.py [-h] [--about] [--links LINKS] [--add-link ADD_LINK]
+                    [--engine {auto,1,2,gemini,local}] [--api-key API_KEY]
+                    [--model-path MODEL_PATH] [--font FONT]
+                    [--font-size FONT_SIZE] [--min-font-size MIN_FONT_SIZE]
+                    [--lore LORE] [--context CONTEXT]
+                    [--target-lang TARGET_LANG] [--config CONFIG]
+                    [--output OUTPUT]
+                    [input]
 
 options:
-  --links LINKS         Path to text file containing links (default: links.txt)
-  --add-link ADD_LINK   Append a URL to links file and run
+  --about               Show dead-simple guide on how it works & Option 1 vs 2
+  --links LINKS         Path to links file (default: links.txt)
+  --add-link ADD_LINK   Append a URL to links.txt and immediately run
+  --engine {1,2,auto}   [1/gemini] = Gemini Flash, [2/local] = Local Qwen model
+  --api-key API_KEY     Gemini API Key (Option 1)
+  --model-path PATH     Path to local .gguf model (Option 2)
+  --font FONT           Subtitle font: latex, arial, times, or path to .ttf (default: latex)
+  --font-size SIZE      Base dialogue font size in pt (default: 28)
+  --min-font-size SIZE  Minimum font size for auto-fitting long lines (default: 16)
+  --lore LORE           Lore preset or JSON path (e.g. gfl2, genshin, or lore/custom.json)
+  --context CONTEXT     One-off scene context or background notes for the translator
+  --target-lang LANG    Target language (default: English)
   --config CONFIG       Path to configuration JSON (default: config/default.json)
   --output OUTPUT       Output directory (default: output/)
-  --api-key API_KEY     Gemini API Key
-  --target-lang TARGET_LANG
-                        Target language (e.g. English, Vietnamese)
-  --game GAME           Game name or lore context prompt
 ```
 
 ---
 
-## ⚙️ Configuration (`config/default.json`)
+## 📖 Universal Lore & Context System
 
-You can customize the dialogue crop region, sampling speed, and overlay styling for any game:
+To translate **any** visual novel or anime game with lore accuracy:
 
-```json
-{
-  "crop_y_ratio": 0.72,
-  "crop_h_ratio": 0.28,
-  "sample_interval": 1.0,
-  "ocr_languages": ["zh-Hans", "en-US"],
-  "target_language": "English",
-  "game_context": "Visual Novel / Anime story cutscene (Girls' Frontline 2)",
-  "box_color": [14, 24, 27, 248],
-  "box_rect_1080p": [78, 825, 1842, 1047],
-  "speaker_font_size": 30,
-  "dialogue_font_size": 27,
-  "video_bitrate": "4500k"
-}
-```
+1. **Pre-built Lore Presets:**
+   - `--lore gfl2` (*Girls' Frontline 2: Exilium*)
+   - `--lore lore/template.json` (Custom starter template)
 
-* **`crop_y_ratio` & `crop_h_ratio`:** Defines the vertical portion of the video to scan (default: bottom 28% where visual novel text boxes are located).
-* **`sample_interval`:** Time between OCR scans in seconds (default: 1.0s).
-* **`box_rect_1080p`:** The exact pixel coordinates `[x1, y1, x2, y2]` of the dialogue box in 1080p.
+2. **Custom Lore JSON (`lore/my_game.json`):**
+   ```json
+   {
+     "game_title": "Fate/stay night",
+     "synopsis": "Fifth Holy Grail War in Fuyuki City.",
+     "characters": {
+       "远坂凛": { "en_name": "Rin Tohsaka", "voice": "Tsundere, sharp-tongued, proud mage." },
+       "卫宫士郎": { "en_name": "Shirou Emiya", "voice": "Earnest, idealistic, stubborn." }
+     },
+     "glossary": {
+       "圣杯战争": "Holy Grail War",
+       "令咒": "Command Spells",
+       "宝具": "Noble Phantasm"
+     }
+   }
+   ```
+
+3. **Editable Base Prompt:**
+   You can customize the base system prompt directly in `config/prompt_template.txt`. Both Gemini and the local model use this template.
 
 ---
 
@@ -111,14 +149,17 @@ You can customize the dialogue crop region, sampling speed, and overlay styling 
 ```mermaid
 flowchart TD
     A["Video Source (Bilibili / YouTube / Local MP4)"] --> B["yt-dlp (Native 1080p Stream)"]
-    B --> C["Native Swift Vision OCR (Apple Neural Engine)"]
+    B --> C["Native Swift Vision OCR (Apple Neural Engine, ~15x Speed)"]
     C --> D["Segmenter & Typewriter De-duplicator"]
-    D --> E["Gemini Flash Batch Translator (Text-only, ~$0.001)"]
-    E --> F["Pillow Dialogue Overlay Generator"]
-    E --> G["SRT Subtitle Exporter"]
-    F --> H["FFmpeg VideoToolbox (M4 Hardware Encoding, 220+ FPS)"]
-    H --> I["🎬 Hardcoded 1080p Subbed Video"]
-    G --> J["📝 Standalone .srt File"]
+    D --> E{"Translation Engine"}
+    E -->|"Option 1"| F["Gemini Flash Batch API (~$0.001, 3s)"]
+    E -->|"Option 2"| G["Local Qwen / llama.cpp (100% Free & Offline)"]
+    F & G --> H["Adaptive Dynamic Text Space Layout Engine (LaTeX Font)"]
+    H --> I["Pillow Custom Dialogue Box Renderer"]
+    H --> J["SRT Subtitle Exporter"]
+    I --> K["FFmpeg VideoToolbox (Apple Silicon Hardware Encoding, 200+ FPS)"]
+    K --> L["🎬 Hardcoded 1080p Subbed Video"]
+    J --> M["📝 Standalone .srt File"]
 ```
 
 ---

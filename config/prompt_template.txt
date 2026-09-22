@@ -1,0 +1,19 @@
+You are an expert video game story localizer and translator.
+Translate the following dialogue lines from a {game_context} into natural, engaging, and lore-accurate {target_lang}.
+
+### Guidelines:
+1. Preserve each character's unique voice, emotional state, and personality.
+2. Accurately translate game-specific terminology and character names based on the provided lore.
+3. Keep the translation fluent, natural, and immersive, as if natively written for an official English release.
+4. Output a JSON array of strings matching 1:1 with the input array in the exact same order.
+
+{lore_context}
+
+Input lines to translate:
+{input_lines}
+
+Return ONLY valid JSON:
+[
+  "translated line 1",
+  "translated line 2"
+]

@@ -1,0 +1,39 @@
+{
+  "game_title": "Girls' Frontline 2: Exilium (少前2：追放)",
+  "synopsis": "Ten years after Griffin & Kryuger disbanded, the Commander operates from the mobile base Amos (艾莫号). Following a mysterious crisis in Mokosh, the Commander has vanished into or emerged from the Aethel Space (希岸空间). Allies and former Sangvis Ferri ringleaders hunt down Paradeus strongholds to rescue him.",
+  "characters": {
+    "格琳娜": { "en_name": "Kalina", "voice": "Former Griffin logistics officer, warm, practical, supportive, veteran composure." },
+    "闪电": { "en_name": "Groza", "voice": "Captain of the Amos squad (OTs-14), disciplined, deep loyalty to Commander, hides inner vulnerability." },
+    "乌尔丽德": { "en_name": "Ulrid", "voice": "Red-haired Doll leader, sincere, prone to anxiety, squeezes a rubber squeaky pig for stress relief." },
+    "莉塔拉": { "en_name": "Littara", "voice": "Gentle, helpful, communicates updates on Paladaja reconstruction." },
+    "美玲": { "en_name": "Meiling", "voice": "Amos chief mechanic, workaholic, devastated and exhausted over Commander's disappearance." },
+    "纳美西丝": { "en_name": "Nemesis", "voice": "Mystic sniper Doll, speaks in cryptic, poetic prophecies and visions of fate." },
+    "佩里缇亚": { "en_name": "Peritya", "voice": "Cat-like Doll, lazy, cynical, observant, speaks languidly." },
+    "莱娅": { "en_name": "Leya", "voice": "Cheerful, playful, likes to tease others." },
+    "莱娜": { "en_name": "Lena", "voice": "Energetic, stubborn, easily frustrated during repair work." },
+    "代理人": { "en_name": "Agent", "voice": "Regent of Sangvis Ferri, impeccably polite maid in tone, intensely intimidating and lethal." },
+    "梦想家": { "en_name": "Dreamer", "voice": "Sadistic, condescending, finds amusement in cruelty and chaos." },
+    "建筑师": { "en_name": "Architect", "voice": "Goofy, excitable demolitions expert, whiny and fun-loving." },
+    "计量官": { "en_name": "Gager", "voice": "Disciplined knightly warrior, honorable and blunt." },
+    "破坏者": { "en_name": "Destroyer", "voice": "Childish, loud, easily flustered." },
+    "兰汀": { "en_name": "Lanting", "voice": "Former Griffin commander, now Manny Security officer, nostalgic about the Commander." },
+    "罗贝蒂": { "en_name": "Roberti", "voice": "Young Manny Security subordinate to Lanting, diligent and respectful." }
+  },
+  "glossary": {
+    "铁血工造": "Sangvis Ferri",
+    "铁血叛乱": "Butterfly Incident",
+    "格里芬与克鲁格": "Griffin & Kryuger",
+    "艾莫号": "Amos (Elmo)",
+    "霜降小队": "Frostfall Squad",
+    "莫辛纳甘": "Mosin-Nagant",
+    "帕拉达嘉": "Paladaja",
+    "曼尼安保": "Manny Security",
+    "希岸": "Aethel Space",
+    "帕拉蒂斯": "Paradeus",
+    "长城列车军": "Great Wall Armored Train Division",
+    "人形": "Tactical Doll (Doll)",
+    "指挥官": "Commander",
+    "白烨戈": "Bai Yego (M16A1)",
+    "生骸": "ELID / Corrupted Biomass"
+  }
+}
