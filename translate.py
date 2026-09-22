@@ -3,13 +3,6 @@ import os
 import sys
 import argparse
 import json
-from src.downloader import download_video, sanitize_filename
-from src.ocr_engine import run_ocr
-from src.segmenter import segment_raw_frames
-from src.translator import translate_segments
-from src.renderer import render_overlays_and_video, export_subtitles
-from src.lore_manager import LoreManager
-
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_CONFIG_PATH = os.path.join(ROOT_DIR, "config", "default.json")
 DEFAULT_OUTPUT_DIR = os.path.join(ROOT_DIR, "output")
@@ -83,6 +76,12 @@ def load_config(config_path):
     return {}
 
 def process_single_video(video_path, title, output_dir, config, lore_mgr, engine="auto", api_key=None, model_path=None):
+    from src.downloader import sanitize_filename
+    from src.ocr_engine import run_ocr
+    from src.segmenter import segment_raw_frames
+    from src.translator import translate_segments
+    from src.renderer import render_overlays_and_video, export_subtitles
+
     safe_title = sanitize_filename(title)[:50]
     work_dir = os.path.join(output_dir, f"work_{safe_title}")
     os.makedirs(work_dir, exist_ok=True)
@@ -211,6 +210,9 @@ Use --about for a quick explanation of Option 1 vs Option 2 and best practices.
     if args.target_lang:
         config["target_language"] = args.target_lang
         
+    from src.lore_manager import LoreManager
+    from src.downloader import download_video
+
     lore_mgr = LoreManager(lore_path=args.lore, scene_context=args.context)
     output_dir = os.path.abspath(args.output)
     os.makedirs(output_dir, exist_ok=True)
